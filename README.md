@@ -1,0 +1,34 @@
+# Energy Investment Lab
+
+[![CI](https://github.com/NishikawaButterfly/energy-investment-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/NishikawaButterfly/energy-investment-lab/actions/workflows/ci.yml)
+
+A cash-flow and financing model for energy assets: solar, wind, batteries,
+pumped hydro, and the hybrids in between. You describe an asset's costs,
+revenues, and financing, and it works out the investment case — NPV, IRR,
+payback, debt service — with every intermediate number visible and testable.
+
+This project is young and being built in the open, issue by issue. The plan
+is a calculation kernel first (plain Python, no heavy dependencies), then a
+CLI, then reporting. Nothing here is investment advice, and every dataset in
+this repository is fictional.
+
+## What exists today
+
+The discounting primitives and the project skeleton. Watch the
+[issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
+to see what lands next.
+
+## Development
+
+Python 3.12 or newer, no runtime dependencies.
+
+```bash
+python -m venv .venv
+# Activate .venv with the command for your shell.
+python -m pip install -e ".[dev]"
+python -m unittest discover -s tests
+```
+
+## License
+
+Released under the [MIT License](LICENSE).
