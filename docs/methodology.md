@@ -369,3 +369,61 @@ hurdle. The discounted payback still never happens.
 
 With a zero tax rate and no grant the fiscal evaluation reproduces every
 pre-tax number exactly.
+
+## One-at-a-time sensitivities
+
+A sensitivity spec is an ordered list of variants, each changing exactly
+one parameter — as a multiplier on the base value or an absolute
+replacement — while everything else stays at base. The parameters are
+`capex_eur`, `discount_rate`, and `opex_eur`, plus every revenue
+stream's year-1 amount addressed by the stream's name, plus
+`loan_principal_eur` and `loan_rate` when the evaluation has a loan and
+`tax_rate` when it has fiscal rules. Base and variants together are
+capped at 32 runs, and unknown parameters are rejected with the exact
+supported list.
+
+Every run goes through the same evaluation entry points a direct call
+would use, so a sensitivity row can never disagree with a direct
+evaluation — the tests assert the base row equals one exactly. Each
+flat row carries the NPV, IRR, MIRR, both paybacks, and, when levered,
+the minimum DSCR; the base row is flagged. The MIRR uses the evaluated
+asset's discount rate as both the finance and the reinvestment rate —
+the documented defaults — so a `discount_rate` variant moves them too.
+
+### Worked example, continued
+
+Five variants on the sample asset: capex ±20%, the `energy sales`
+stream ±20%, and the discount rate set to 6%.
+
+| Variant | NPV | IRR | MIRR | Simple payback |
+|:--------|----:|----:|-----:|---------------:|
+| base | -129,260.55 | 5.1310% | 6.5154% | 7.7827 |
+| capex_eur\*0.8 | 70,739.45 | 9.8601% | 8.9190% | 6.3184 |
+| capex_eur\*1.2 | -329,260.55 | 1.6344% | 4.5910% | 9.2053 |
+| energy sales\*0.8 | -346,945.42 | -0.2575% | 3.4948% | — |
+| energy sales\*1.2 | 88,424.31 | 9.8601% | 8.9190% | 6.3184 |
+| discount_rate=0.06 | -42,040.35 | 5.1310% | 5.5457% | 7.7827 |
+
+Every NPV above is recomputable from the earlier tables. Capex enters
+at year 0 undiscounted, so ±20% of it moves the NPV by exactly
+±200,000: -129,260.55 + 200,000 = 70,739.45. For the revenue variants,
+the discounted net flows of the main table sum to 870,739.45 (the NPV
+plus the capex), and since revenue is 150/120 of the net flow, its
+present value is 1.25 × 870,739.45 = 1,088,424.31. Twenty percent of
+that is 217,684.86 — exactly the PV of the opex column from the
+levelized-cost section, because opex is itself 20% of revenue — so
+
+```
+energy sales +20%: NPV = -129,260.55 + 217,684.86 =   88,424.31
+energy sales -20%: NPV = -129,260.55 - 217,684.86 = -346,945.41
+```
+
+(the -20% case lands one cent off the full-precision -346,945.42, the
+usual cents-rounding residue). Three sanity checks the table makes
+visible: the discount-rate variant leaves the IRR untouched, because
+the IRR never depended on the discount rate, while its MIRR drops to
+5.5457% as the default rates follow the asset; `capex_eur*0.8` and
+`energy sales*1.2` share the same IRR, MIRR, and paybacks because
+their cash-flow streams are proportional (one is 1.25 times the
+other) even though their NPVs differ; and `energy sales*0.8` never
+pays back — its IRR turns negative and both paybacks vanish.

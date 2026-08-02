@@ -26,7 +26,9 @@ year-by-year table, NPV, IRR, simple and discounted payback), the debt
 layer (annuity amortization, equity cash flows and returns, DSCR with
 the minimum year flagged), and the fiscal layer (corporate tax with
 straight-line depreciation, capital grants, unlimited loss carryforward,
-and the after-tax metrics). The method and a worked example live in
+and the after-tax metrics), and one-at-a-time sensitivities (a capped
+spec of single-parameter variants rerun through the same evaluations,
+base row flagged). The method and a worked example live in
 [docs/methodology.md](docs/methodology.md). The CLI and reporting layers
 do not exist yet. Watch the
 [issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
