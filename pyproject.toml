@@ -19,6 +19,9 @@ dev = [
   "ruff==0.16.0",
 ]
 
+[project.scripts]
+investlab = "investlab.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/NishikawaButterfly/energy-investment-lab"
 Issues = "https://github.com/NishikawaButterfly/energy-investment-lab/issues"

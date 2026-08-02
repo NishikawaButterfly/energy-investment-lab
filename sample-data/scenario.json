@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "asset": {
+    "name": "Meadowlark Solar Park (20 MW)",
+    "project_life_years": 25,
+    "capex_eur": 12000000,
+    "revenues": [
+      {
+        "name": "energy sales",
+        "year_one_amount_eur": 2000000,
+        "escalation_fraction_per_year": 0.01
+      }
+    ],
+    "fixed_opex_eur": 400000,
+    "opex_escalation_fraction_per_year": 0.02,
+    "discount_rate_fraction": 0.07
+  },
+  "loan": {
+    "principal_eur": 7000000,
+    "rate_fraction": 0.05,
+    "tenor_years": 15
+  },
+  "fiscal": {
+    "tax_rate_fraction": 0.25,
+    "depreciation_years": 20,
+    "grant_eur": 0
+  },
+  "energy": {
+    "year_one_energy_mwh": 36000,
+    "degradation_fraction_per_year": 0.005
+  },
+  "sensitivity": {
+    "variants": [
+      { "parameter": "capex_eur", "mode": "multiplier", "value": 0.8 },
+      { "parameter": "capex_eur", "mode": "multiplier", "value": 1.2 },
+      { "parameter": "energy sales", "mode": "multiplier", "value": 0.8 },
+      { "parameter": "energy sales", "mode": "multiplier", "value": 1.2 },
+      { "parameter": "discount_rate", "mode": "absolute", "value": 0.09 }
+    ]
+  },
+  "monte_carlo": {
+    "runs": 200,
+    "seed": 12,
+    "distributions": {
+      "capex": { "kind": "normal", "mean_multiplier": 1.0, "stddev": 0.05 },
+      "opex": { "kind": "uniform", "low": 0.95, "high": 1.1 },
+      "revenue": {
+        "energy sales": { "kind": "triangular", "low": 0.85, "mode": 1.0, "high": 1.1 }
+      }
+    }
+  }
+}
