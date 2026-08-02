@@ -284,3 +284,88 @@ LCOE         = 1,217,684.86 / 13,163.58 = 92.50 EUR/MWh
 Without degradation the discounted energy would be 13,420.16 MWh and
 the LCOE 90.74 EUR/MWh: degradation only ever shrinks the denominator,
 so it can only raise the levelized cost.
+
+## Taxes, depreciation, and grants
+
+The fiscal layer sits on top of the financed evaluation. Capex net of an
+optional capital grant is depreciated straight-line, and the taxable
+result of an operating year is the operating result minus depreciation
+minus loan interest when a loan is present — interest is deductible,
+principal repayment is not:
+
+```
+depreciable base = capex - grant
+depreciation(t)  = base / depreciation_years   for t = 1 .. depreciation_years
+taxable(t)       = net(t) - depreciation(t) - interest(t)
+```
+
+The grant arrives as cash at year 0 and reduces the depreciable base; it
+is not taxed as income. A negative taxable result is never refunded:
+it becomes a tax loss carried forward without time limit — the standard
+unlimited-carryforward treatment — and offsets the next positive taxable
+results before any tax is charged. The tax of a year is the rate times
+the taxable base left after loss relief, and the same tax reduces both
+the project and the equity cash flow of that year: one entity, one tax
+bill.
+
+Inflation deliberately has no knob of its own. The asset already
+escalates every revenue stream and the fixed opex independently, so
+nominal (inflated) cash flows are expressed there; a global inflation
+rate would only duplicate those escalations.
+
+### Worked example, continued
+
+The same asset and the same 600,000 EUR loan, now with a 25% tax rate,
+straight-line depreciation over 10 years, and a 100,000 EUR grant.
+
+The depreciable base is 1,000,000 − 100,000 = 900,000 EUR, so
+depreciation is 90,000 per year in every operating year. The tax table,
+rounded to cents:
+
+| Year | Net flow | Depreciation | Interest | Taxable | Loss used | Taxed base | Tax | Carryforward |
+|-----:|---------:|-------------:|---------:|--------:|----------:|-----------:|----:|-------------:|
+| 1 | 120,000.00 | 90,000.00 | 36,000.00 | -6,000.00 | 0.00 | 0.00 | 0.00 | 6,000.00 |
+| 2 | 122,400.00 | 90,000.00 | 29,613.73 | 2,786.27 | 2,786.27 | 0.00 | 0.00 | 3,213.73 |
+| 3 | 124,848.00 | 90,000.00 | 22,844.28 | 12,003.72 | 3,213.73 | 8,789.99 | 2,197.50 | 0.00 |
+| 4 | 127,344.96 | 90,000.00 | 15,668.67 | 21,676.29 | 0.00 | 21,676.29 | 5,419.07 | 0.00 |
+| 5 | 129,891.86 | 90,000.00 | 8,062.52 | 31,829.34 | 0.00 | 31,829.34 | 7,957.33 | 0.00 |
+| 6 | 132,489.70 | 90,000.00 | 0.00 | 42,489.70 | 0.00 | 42,489.70 | 10,622.42 | 0.00 |
+| 7 | 135,139.49 | 90,000.00 | 0.00 | 45,139.49 | 0.00 | 45,139.49 | 11,284.87 | 0.00 |
+| 8 | 137,842.28 | 90,000.00 | 0.00 | 47,842.28 | 0.00 | 47,842.28 | 11,960.57 | 0.00 |
+| 9 | 140,599.13 | 90,000.00 | 0.00 | 50,599.13 | 0.00 | 50,599.13 | 12,649.78 | 0.00 |
+| 10 | 143,411.11 | 90,000.00 | 0.00 | 53,411.11 | 0.00 | 53,411.11 | 13,352.78 | 0.00 |
+
+Spot check. Year 3's tax is (12,003.72 − 3,213.73) × 0.25 = 8,789.99 ×
+0.25 = 2,197.50. Years 5 and 6 land on a half cent when recomputed from
+the rounded columns; at full precision their taxes are 7,957.334985 and
+10,622.424096, which the table rounds to cents.
+
+Years 1 and 2 pay no tax. Year 1 runs a taxable loss of 120,000 − 90,000
+− 36,000 = −6,000, which carries forward. Year 2 earns 122,400 − 90,000
+− 29,613.73 = 2,786.27, absorbed entirely by that loss, leaving 3,213.73
+carried forward. Taxes first become payable in year 3: 124,848 − 90,000
+− 22,844.28 = 12,003.72, and the remaining 3,213.73 of losses leaves a
+taxed base of 8,789.99, so the tax is 8,789.99 × 0.25 = 2,197.50. From
+year 6 the loan is repaid and depreciation is the only deduction. The
+taxes over the whole life add up to 75,444.33 EUR.
+
+### After-tax NPV
+
+Each after-tax cash flow is the pre-tax flow, plus the grant at year 0,
+minus the tax of the year. The after-tax NPV is therefore the pre-tax
+NPV plus the grant minus the present value of the tax column, which
+discounted at 8% is 43,396.68 EUR:
+
+```
+after-tax NPV        = -129,260.55 + 100,000 - 43,396.68 = -72,657.23 EUR
+after-tax equity NPV =  -97,973.55 + 100,000 - 43,396.68 = -41,370.23 EUR
+```
+
+Year 0 improves by the grant (the project now spends 900,000, the equity
+300,000), so the after-tax IRR of 6.1952% and equity IRR of 6.3145% both
+sit above their pre-tax counterparts, and the simple after-tax payback
+shortens to 7.3604 years — though the project still misses the 8%
+hurdle. The discounted payback still never happens.
+
+With a zero tax rate and no grant the fiscal evaluation reproduces every
+pre-tax number exactly.
