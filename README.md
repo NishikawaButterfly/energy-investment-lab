@@ -15,24 +15,25 @@ this repository is fictional.
 ## What exists today
 
 The discounting primitives, the asset model, the cash-flow engine (the
-year-by-year table, NPV, IRR, simple and discounted payback), the
-debt layer (annuity amortization, equity cash flows and returns, DSCR
-with the minimum year flagged), and standalone metrics: MIRR with
-explicit finance and reinvestment rates, and levelized cost from an
-energy profile with degradation (LCOE, or LCOS for storage). The method
-and a worked example live in
-
 year-by-year table, NPV, IRR, simple and discounted payback), the debt
 layer (annuity amortization, equity cash flows and returns, DSCR with
-the minimum year flagged), and the fiscal layer (corporate tax with
+the minimum year flagged), the fiscal layer (corporate tax with
 straight-line depreciation, capital grants, unlimited loss carryforward,
-and the after-tax metrics), and one-at-a-time sensitivities (a capped
-spec of single-parameter variants rerun through the same evaluations,
-base row flagged). The method and a worked example live in
-[docs/methodology.md](docs/methodology.md). The CLI and reporting layers
-do not exist yet. Watch the
+and the after-tax metrics), standalone metrics (MIRR with explicit
+finance and reinvestment rates, and levelized cost from an energy
+profile with degradation - LCOE, or LCOS for storage), and one-at-a-time
+sensitivities (a capped spec of single-parameter variants rerun through
+the same evaluations, base row flagged). The method and a worked example
+live in [docs/methodology.md](docs/methodology.md). The CLI and
+reporting layers do not exist yet. Watch the
 [issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
 to see what lands next.
+
+There is also a seeded Monte Carlo layer: uncertain capex, revenues,
+and opex drawn from truncated-normal, uniform, or triangular
+distributions, with NPV and IRR percentiles and the probability of a
+negative NPV. The seed is a required argument, so every simulation is
+reproducible number for number.
 
 ## Development
 
