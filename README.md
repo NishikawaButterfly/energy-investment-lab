@@ -24,8 +24,7 @@ finance and reinvestment rates, and levelized cost from an energy
 profile with degradation - LCOE, or LCOS for storage), and one-at-a-time
 sensitivities (a capped spec of single-parameter variants rerun through
 the same evaluations, base row flagged). The method and a worked example
-live in [docs/methodology.md](docs/methodology.md). The CLI and
-reporting layers do not exist yet. Watch the
+live in [docs/methodology.md](docs/methodology.md). Watch the
 [issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
 to see what lands next.
 
@@ -34,6 +33,26 @@ and opex drawn from truncated-normal, uniform, or triangular
 distributions, with NPV and IRR percentiles and the probability of a
 negative NPV. The seed is a required argument, so every simulation is
 reproducible number for number.
+
+On top of the kernel sits the `investlab` CLI: one JSON scenario file
+in, `results.json` and a committee-style `report.md` out. The scenario
+format and both commands are described in [docs/cli.md](docs/cli.md).
+
+## Usage
+
+Install the package and point the CLI at a scenario file:
+
+```bash
+python -m pip install -e .
+investlab run --scenario sample-data/scenario.json --output results
+```
+
+The run writes `results.json`, with every computed number plus the
+Monte Carlo seed and run count, and `report.md`, a short report meant
+to be read in a few minutes: the assumptions, the base case, the
+sensitivity table, the Monte Carlo percentiles, and the caveats.
+`investlab validate --scenario FILE` checks a scenario file without
+evaluating it.
 
 ## Development
 
