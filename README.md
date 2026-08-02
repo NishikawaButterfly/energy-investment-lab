@@ -15,9 +15,12 @@ this repository is fictional.
 ## What exists today
 
 The discounting primitives, the asset model, the cash-flow engine (the
-year-by-year table, NPV, IRR, simple and discounted payback), and the
+year-by-year table, NPV, IRR, simple and discounted payback), the
 debt layer (annuity amortization, equity cash flows and returns, DSCR
-with the minimum year flagged). The method and a worked example live in
+with the minimum year flagged), and standalone metrics: MIRR with
+explicit finance and reinvestment rates, and levelized cost from an
+energy profile with degradation (LCOE, or LCOS for storage). The method
+and a worked example live in
 [docs/methodology.md](docs/methodology.md). The CLI and reporting layers
 do not exist yet. Watch the
 [issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
