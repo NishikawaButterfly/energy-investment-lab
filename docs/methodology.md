@@ -427,3 +427,46 @@ the IRR never depended on the discount rate, while its MIRR drops to
 their cash-flow streams are proportional (one is 1.25 times the
 other) even though their NPVs differ; and `energy sales*0.8` never
 pays back — its IRR turns negative and both paybacks vanish.
+
+## Monte Carlo simulation
+
+Uncertainty enters as dimensionless multipliers on three inputs: the
+capex, any revenue stream's year-1 amount (picked by name), and the
+fixed opex. Each uncertain input gets one distribution from a closed
+set — `Normal(mean, stddev)` truncated below at a floor, `Uniform(low,
+high)`, or `Triangular(low, mode, high)` — and every run multiplies the
+deterministic value by a fresh draw, rebuilds the asset through the same
+validation as a hand-written one, and evaluates it through the existing
+engine, debt, and fiscal layers. Nothing is recomputed differently.
+
+**The seed is mandatory.** An unseeded simulation cannot be re-run to
+the same numbers, so none of its figures can be checked — and a figure
+that cannot be checked has no place in this model. The same seed always
+reproduces the same result, number for number; the seed and run count
+are embedded in the result so any report can cite them.
+
+**Truncation.** The normal distribution is truncated by redrawing: a
+draw at or below the floor (default 0) is thrown away and drawn again.
+This yields a true truncated normal — no probability mass piles up on
+the floor, as clamping would cause. The floor must sit below the mean,
+which keeps over half the distribution acceptable and guarantees the
+redraw loop terminates quickly. A floor of 0 simply forbids negative
+multipliers, which would turn a cost into a revenue.
+
+**Percentiles.** The 5/25/50/75/95 percentiles use linear interpolation
+between closest ranks: the sorted values take ranks 0 through n − 1,
+the target rank for level `p` is `p / 100 × (n − 1)`, and a fractional
+rank interpolates linearly between its two neighbours. For the sorted
+values 10, 20, 30, 40, 50 the 5th percentile has rank 0.2, giving
+10 + 0.2 × (20 − 10) = 12, and the 25th has rank 1.0, giving exactly
+20 — the tests assert these digits. IRR percentiles cover only the runs
+where a unique IRR exists; runs without one are counted and reported
+alongside, never silently dropped into the statistics.
+
+**Sanity bound.** With `Uniform(0.9, 1.1)` on revenue as the only
+uncertainty, every simulated NPV must lie between the NPVs of the
+deterministic −10% and +10% revenue variants, because NPV is monotone
+in a revenue multiplier. The test suite asserts that envelope on 500
+runs rather than trusting any hand-computed percentile. A degenerate
+`Uniform(1, 1)` on every input reproduces the deterministic base
+exactly for every run, with zero standard deviation.
