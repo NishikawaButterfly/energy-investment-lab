@@ -88,3 +88,81 @@ simple payback = 7 + 107,885.99 / 137,842.28 = 7.7827 years
 Discounted payback applies the same rule to the cumulative discounted
 column. That column is still -129,260.55 at year 10, so the discounted
 payback never happens and the engine reports none.
+
+## Debt
+
+A loan is drawn in full at year 0 and repaid as an annuity: the same
+payment every year, split into interest on the opening balance and
+principal. For principal `P`, rate `r`, and tenor `n` years:
+
+```
+annuity factor = r / (1 - (1 + r)^-n)
+payment        = P * annuity factor
+```
+
+The final payment retires the remaining balance exactly, absorbing
+sub-cent floating-point residue, so the closing balance ends at zero.
+
+### Worked example, continued
+
+The same asset borrows 600,000 EUR at 6% over 5 years.
+
+```
+1.06^5         = 1.338226
+annuity factor = 0.06 / (1 - 1 / 1.338226) = 0.237396
+payment        = 600,000 * 0.237396 = 142,437.84 EUR per year
+```
+
+The amortization table, rounded to cents:
+
+| Year | Opening | Interest | Principal | Payment | Closing |
+|-----:|--------:|---------:|----------:|--------:|--------:|
+| 1 | 600,000.00 | 36,000.00 | 106,437.84 | 142,437.84 | 493,562.16 |
+| 2 | 493,562.16 | 29,613.73 | 112,824.11 | 142,437.84 | 380,738.05 |
+| 3 | 380,738.05 | 22,844.28 | 119,593.56 | 142,437.84 | 261,144.49 |
+| 4 | 261,144.49 | 15,668.67 | 126,769.17 | 142,437.84 | 134,375.32 |
+| 5 | 134,375.32 | 8,062.52 | 134,375.32 | 142,437.84 | 0.00 |
+
+Spot check: year-1 interest is 600,000 × 0.06 = 36,000, so the year-1
+principal is 142,437.84 − 36,000 = 106,437.84.
+
+### DSCR
+
+CFADS (cash flow available for debt service) is the project operating
+cash flow: revenue minus opex, before any debt service. The DSCR of a
+year is CFADS divided by the debt service:
+
+```
+DSCR(1) = 120,000.00 / 142,437.84 = 0.8425
+DSCR(5) = 129,891.86 / 142,437.84 = 0.9119
+```
+
+The minimum is year 1 at 0.8425. Every covered year sits below 1.0, so
+this financing does not service itself from operating cash flow — the
+model flags exactly that, which is the point of computing it.
+
+### Equity cash flows
+
+Equity puts in capex minus principal at year 0 and receives each year's
+project cash flow minus the debt service:
+
+```
+year 0:      -1,000,000 + 600,000            = -400,000.00
+year 1:      120,000.00 - 142,437.84         = -22,437.84
+years 2..5:  still negative, DSCR below one
+year 6:      132,489.70 (debt fully repaid)
+```
+
+Discounting the equity stream at the same 8% gives an equity NPV of
+-97,973.55 EUR. The stream has exactly one sign change (negative through
+year 5, positive from year 6), so a unique equity IRR exists:
+
+```
+equity IRR = 4.7013%
+```
+
+Borrowing at 6% against a project earning 5.13% drags the equity return
+below the project return — leverage amplifies in both directions.
+
+Without a loan, the financed evaluation reproduces the unlevered project
+numbers exactly, with empty debt tables.
