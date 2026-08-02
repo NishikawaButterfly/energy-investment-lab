@@ -89,6 +89,60 @@ Discounted payback applies the same rule to the cumulative discounted
 column. That column is still -129,260.55 at year 10, so the discounted
 payback never happens and the engine reports none.
 
+## Modified IRR (MIRR)
+
+The IRR silently assumes every interim flow is reinvested at the IRR
+itself. The MIRR replaces that assumption with two explicit rates: the
+negative flows are discounted to year 0 at a finance rate (what funding
+the outlays costs), and the positive flows are compounded to the final
+year `N` at a reinvestment rate (what interim cash actually earns). With
+each side collapsed into a single number:
+
+```
+MIRR = (FV_positive / |PV_negative|)^(1/N) - 1
+```
+
+A stream with no negative flow has no investment side, and one with no
+positive flow has no return side, so in both cases no MIRR exists and
+the function reports none. When both rates equal the IRR, the MIRR is
+the IRR again — the tests assert this property.
+
+### Worked example, continued
+
+The sample project with a 6% finance rate and a 4% reinvestment rate.
+The only negative flow is the capex at year 0, which needs no
+discounting, so |PV_negative| = 1,000,000.00 exactly. Each positive net
+flow compounds to year 10 at 4%:
+
+| Year | Net flow | 1.04^(10-t) | Future value |
+|-----:|---------:|------------:|-------------:|
+| 1 | 120,000.00 | 1.423312 | 170,797.42 |
+| 2 | 122,400.00 | 1.368569 | 167,512.85 |
+| 3 | 124,848.00 | 1.315932 | 164,291.45 |
+| 4 | 127,344.96 | 1.265319 | 161,132.00 |
+| 5 | 129,891.86 | 1.216653 | 158,033.31 |
+| 6 | 132,489.70 | 1.169859 | 154,994.21 |
+| 7 | 135,139.49 | 1.124864 | 152,013.55 |
+| 8 | 137,842.28 | 1.081600 | 149,090.21 |
+| 9 | 140,599.13 | 1.040000 | 146,223.09 |
+| 10 | 143,411.11 | 1.000000 | 143,411.11 |
+
+Summing the unrounded column gives FV_positive = 1,567,499.19 (the
+cents-rounded display values sum one cent higher), so
+
+```
+MIRR = (1,567,499.19 / 1,000,000.00)^(1/10) - 1
+     = 1.567499^0.1 - 1 = 4.5974%
+```
+
+Spot check: year-8 net flow 137,842.28 × 1.04² = 137,842.28 × 1.0816 =
+149,090.21. The MIRR lands between the 4% reinvestment rate and the
+5.1310% IRR, as it must: the interim flows now earn 4% instead of the
+IRR, which drags the compound return below 5.1310% without erasing the
+project's own margin over 4%. The same function applies unchanged to
+equity flows, where the finance rate also discounts the negative
+operating years, not just year 0.
+
 ## Debt
 
 A loan is drawn in full at year 0 and repaid as an annuity: the same
@@ -166,3 +220,67 @@ below the project return — leverage amplifies in both directions.
 
 Without a loan, the financed evaluation reproduces the unlevered project
 numbers exactly, with empty debt tables.
+
+## Levelized cost (LCOE and LCOS)
+
+The levelized cost is the constant price per MWh that, earned on every
+MWh over the project life, would exactly repay the discounted costs:
+
+```
+LCOE = (capex + PV of opex) / (PV of energy)
+```
+
+The energy comes from a profile that degrades from its year-1 amount,
+mirroring how costs escalate from theirs:
+
+```
+energy(t) = year_one_energy * (1 - degradation)^(t - 1)
+```
+
+Both the cost flows and the energy are discounted at the asset's
+discount rate. Discounting energy — a physical quantity — is a
+convention, not physics, and it is worth being honest about why it is
+used: a constant price `p` earns `p × energy(t)` each year, whose
+present value is `p × PV(energy)`; setting that equal to the PV of the
+costs and solving for `p` gives exactly the formula above. Dividing by
+discounted MWh is what makes the levelized cost a break-even price
+rather than an average cost. This is the standard formulation used by
+IEA, NREL, and Lazard, and this model follows it.
+
+For a generator the profile is produced energy and the result is the
+LCOE. For a storage asset the profile is discharged energy and the same
+number is called the LCOS. One function computes both — only the
+profile changes its meaning. Revenues never enter the calculation.
+
+### Worked example, continued
+
+The sample asset generates 2,000 MWh in year 1, degrading 0.5% per
+year. At the same 8% discount rate:
+
+| Year | Opex | Energy (MWh) | Factor | Disc. opex | Disc. energy |
+|-----:|-----:|-------------:|-------:|-----------:|-------------:|
+| 1 | 30,000.00 | 2,000.00 | 0.925926 | 27,777.78 | 1,851.85 |
+| 2 | 30,600.00 | 1,990.00 | 0.857339 | 26,234.57 | 1,706.10 |
+| 3 | 31,212.00 | 1,980.05 | 0.793832 | 24,777.09 | 1,571.83 |
+| 4 | 31,836.24 | 1,970.15 | 0.735030 | 23,400.59 | 1,448.12 |
+| 5 | 32,472.96 | 1,960.30 | 0.680583 | 22,100.55 | 1,334.15 |
+| 6 | 33,122.42 | 1,950.50 | 0.630170 | 20,872.75 | 1,229.14 |
+| 7 | 33,784.87 | 1,940.75 | 0.583490 | 19,713.15 | 1,132.41 |
+| 8 | 34,460.57 | 1,931.04 | 0.540269 | 18,617.97 | 1,043.28 |
+| 9 | 35,149.78 | 1,921.39 | 0.500249 | 17,583.64 | 961.17 |
+| 10 | 35,852.78 | 1,911.78 | 0.463193 | 16,606.77 | 885.52 |
+
+Spot check: year-4 energy is 2,000 × 0.995³ = 2,000 × 0.985075 =
+1,970.15 MWh, and discounted it is 1,970.15 × 0.735030 = 1,448.12.
+Summing the unrounded columns (the cents-rounded display values can sum
+a cent off):
+
+```
+PV of costs  = 1,000,000 + 217,684.86 = 1,217,684.86 EUR
+PV of energy = 13,163.58 MWh
+LCOE         = 1,217,684.86 / 13,163.58 = 92.50 EUR/MWh
+```
+
+Without degradation the discounted energy would be 13,420.16 MWh and
+the LCOE 90.74 EUR/MWh: degradation only ever shrinks the denominator,
+so it can only raise the levelized cost.

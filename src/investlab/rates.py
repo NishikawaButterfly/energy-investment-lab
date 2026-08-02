@@ -17,6 +17,16 @@ def discount_factor(rate: float, year: int) -> float:
     return 1.0 / (1.0 + rate) ** year
 
 
+def compound_factor(rate: float, years: int) -> float:
+    """Future-value factor for a cash flow compounded over ``years`` years.
+
+    The exact reciprocal of ``discount_factor``, with the same rules:
+    zero years means no compounding, and the rate is a plain fraction.
+    """
+
+    return 1.0 / discount_factor(rate, years)
+
+
 def present_value(rate: float, cash_flows: list[float]) -> float:
     """Present value of a list of cash flows indexed from year 0."""
 
