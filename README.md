@@ -14,7 +14,12 @@ this repository is fictional.
 
 ## What exists today
 
-The discounting primitives and the project skeleton. Watch the
+The discounting primitives, the asset model, the cash-flow engine (the
+year-by-year table, NPV, IRR, simple and discounted payback), and the
+debt layer (annuity amortization, equity cash flows and returns, DSCR
+with the minimum year flagged). The method and a worked example live in
+[docs/methodology.md](docs/methodology.md). The CLI and reporting layers
+do not exist yet. Watch the
 [issues](https://github.com/NishikawaButterfly/energy-investment-lab/issues)
 to see what lands next.
 
