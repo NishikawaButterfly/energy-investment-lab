@@ -20,7 +20,7 @@ updates:
     labels: [dependencies, python]
     groups:
       # Keep in step with the dev extra in pyproject.toml. Its pins sit on
-      # adjacent lines, so one pull request per tool conflicts with the next
-      # after every merge. Runtime dependencies stay out of this group.
+      # adjacent lines, and separate bumps of neighbouring pins conflict once
+      # either one merges. Runtime dependencies stay out of this group.
       dev-tools:
         patterns: [coverage, mypy, ruff]
