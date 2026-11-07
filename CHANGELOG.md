@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rather than future plans (#18).
 - Development tools (coverage, mypy, ruff) updated to newer releases; the
   package still has no runtime dependencies.
+- The package metadata now declares the license as the SPDX expression
+  `MIT`, with `LICENSE` as its license file (PEP 639), in place of the
+  deprecated TOML table. Building from source needs setuptools 77 or later.
 
 ### Fixed
 
