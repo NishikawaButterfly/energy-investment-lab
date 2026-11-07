@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The README intro now describes the CLI and the report as shipped features
   rather than future plans (#18).
-- Development and CI tool versions updated (#19, #20, #22, #27, #29).
+- Development tools (coverage, mypy, ruff) updated to newer releases; the
+  package still has no runtime dependencies.
 
 ### Fixed
 
